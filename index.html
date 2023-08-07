@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore movies</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-container"></div> <!-- Container for the background image -->
+
+    <header>
+        <h1>Welcome to film explorer</h1>
+        <h2>Discover learn, and add new movies to your watchlist</h2>
+        <h3>what is trending?</h3>
+    </header>
+
+    <main>
+    </main>
+    <div class="user-form-container"> <!-- Add a new container for the form -->
+        <div class="user-form">
+            <h3>Enter Your Email to see your watchlist</h3>
+            <form action="/submit" id="form" method="POST">
+                <input type="text" name ="email" id="emailInput" placeholder="Your email">
+                <br>
+                <label for="moviesList">Choose a movie for your watchlist:</label>
+                  <select class="dropdown" name="movieSelection" id="lang" multiple>
+                  </select>
+                  <br>
+                  <input type="text" name="movieTittle" placeholder="Enter a name of movies, you would like to add to your watchlist">
+                  <br>  
+                  <button id="submitButton" name="button">Submit</button>
+                    <p id="responseText"></p>
+                    <div id="saveButtonContainer" style="display: none;">
+                        <p>Your watchlist is empty.</p>
+                        <input type="text" id="watchlistInput" placeholder="Type anything">
+                        <button id="saveButton">Save</button>
+                    </div>
+            </form>
+            <form action="/displayList" id ='data' method="POST">
+              <button id ="data"> display data</button>
+            </form>
+                    
+        </div>
+        
+    </div>
+
+    <div id="moviesSection"></div>
+    <style>
+        body {
+    /* Add other styles for the body here if needed */
+    margin: 0;
+    padding: 0;
+    /* Set the background color in case the image is not fully displayed */
+    background-color: #000000; /* Black color as a fallback */
+    color: #ffffff; /* White text color */
+   font-family: Arial, sans-serif;
+}
+
+.background-container {
+    /* Set the background image */
+    background-image: url(../pexels-tima-miroshnichenko-7991486-scaled.jpg);
+    /* Adjust background properties to cover the container */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Set the container to cover the entire viewport */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Ensure the background stays behind the content */
+}
+
+/* Add styles for other elements on your page here */
+
+/* For example, style your header element */
+header {
+    text-align: center;
+    padding: 20px;
+   
+    background-color: rgba(8, 8, 8, 0.5); /* Transparent black background for header */
+    /* Add more styles as needed */
+}
+
+/* Style your main content section */
+main {
+    padding: 20px;
+    /* Add more styles as needed */
+}
+
+/* Style your footer element */
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.5); /* Transparent black background for footer */
+    /* Add more styles as needed */
+}
+
+.movie-container {
+    margin-bottom: 20px; /* Add some space between movies */
+}
+
+.movie-content {
+    display: flex; /* Use Flexbox to arrange poster and trailer side by side */
+    gap: 20px; /* Add some space between the poster and trailer */
+}
+
+.movie-image img {
+    width: 150px; /* Adjust the poster image width as needed */
+}
+
+.movie-info {
+    flex: 1; /* Allow the title and description to take the remaining space */
+}
+
+.movie-score {
+    font-size: 18px;
+    font-weight: bold;
+    padding-left: 10px;
+}
+
+/* Green color for scores under 7 */
+.movie-score.low-score {
+    color: #8bfd2e; /* Clear green */
+}
+
+/* Darker green color for scores over 7.5 */
+.movie-score.high-score {
+    color: #008000; /* Darker green */
+}
+
+.user-form {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    margin-top: -50;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.user-form h2 {
+    margin-bottom: 10px;
+}
+
+.user-form input[type="email"] {
+    width: 90%;
+    padding: 10px;
+    margin-bottom: 9px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.user-form button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #5e160f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.user-form p {
+    margin-top: 10px;
+}
+
+.user-form-container {
+position: absolute;
+top: 63%; /* Adjust this value to position the form higher or lower */
+left: 70%;
+transform: translate(-50%, -50%);
+max-width: 100%;
+padding: 20px;
+background-color: rgba(148, 82, 82, 0.7);
+border-radius: 10px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+text-align: center;
+}
+.dropdown{
+    width: 250px;
+    padding: 5px;
+    width: 50;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+    </style>
+    <!-- ... (previous HTML code) ... -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const apiUrl = 'https://api.themoviedb.org/3/discover/movie?api_key=1e23e1cbe808fc398defed60deb63779';
+  
+      // Function to fetch movie titles from the API
+      async function fetchMovieTitles() {
+        try {
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+  
+          // Extract movie titles from the data and return as an array
+          return data.results.map(movie => movie.title);
+        } catch (error) {
+          console.error('Error fetching movie titles:', error);
+          return [];
+        }
+      }
+  
+      // Function to populate the dropdown with movie titles
+      function populateDropdown(movieTitles) {
+        const dropdown = document.getElementById('lang');
+  
+        // Clear any existing options
+        dropdown.innerHTML = '';
+  
+        // Add a default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Choose a movie for your watchlist:';
+        dropdown.appendChild(defaultOption);
+  
+        // Add each movie title as an option in the dropdown
+        movieTitles.forEach(title => {
+          const option = document.createElement('option');
+          option.value = title;
+          option.textContent = title;
+          dropdown.appendChild(option);
+        });
+      }
+  
+      // Modify the fetchMovies function to include error handling and populate the dropdown
+      async function fetchMovies() {
+        try {
+          const movieTitles = await fetchMovieTitles();
+          populateDropdown(movieTitles);
+  
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+  
+          // Call the function to display movie data
+          displayMovies(data.results);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+          displayErrorMessage('Failed to fetch movie data. Please try again later.');
+        }
+      }
+  
+      // Add a function to display an error message on the page
+function displayErrorMessage(message) {
+    const mainElement = document.querySelector('main');
+    mainElement.innerHTML = `<div class="error-message">${message}</div>`;
+  }
+  
+  // Function to fetch movie trailers from the API
+  async function fetchTrailers(movieId) {
+    try {
+      const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=1e23e1cbe808fc398defed60deb63779&include_video_language=en`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      return data.results;
+    } catch (error) {
+      console.error('Error fetching trailers:', error);
+      return [];
+    }
+  }
+  
+  // Function to display movie data and trailers
+  async function displayMovies(movies) {
+    const mainElement = document.querySelector('main');
+  
+    // Create an HTML string to hold the movie data
+    let movieHTML = '';
+  
+    // Loop through the movies and add each movie to the HTML string
+    for (const movie of movies) {
+      const trailers = await fetchTrailers(movie.id);
+  
+      // Get the first trailer key (if available)
+      const trailerKey = trailers.length > 0 ? trailers[0].key : '';
+  
+      let scoreClass = '';
+    if (movie.vote_average <= 7) {
+      scoreClass = 'low-score';
+    } else if (movie.vote_average >= 7.5) {
+      scoreClass = 'high-score';
+    }
+
+    // Add the movie information and YouTube video in the HTML string
+    movieHTML += `
+      <div class="movie-container">
+        <div class="movie-info">
+          <h2>${movie.title} <span class="movie-score ${scoreClass}">(${movie.vote_average})</span></h2>
+          <p>${movie.overview}</p>
+        </div>
+        <div class="movie-content">
+          <div class="movie-image">
+            <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}" alt="${movie.title}" width="250">
+          </div>
+          <div class="movie-trailer">
+            <iframe src="https://www.youtube.com/embed/${trailerKey}" width="300" height="200" frameborder="0" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+    // Set the HTML content of the mainElement to the movieHTML
+    mainElement.innerHTML = movieHTML;
+  }
+
+      // Call the fetchMovies function to initiate the API request and populate the dropdown
+      fetchMovies();
+    });
+
+  </script>
+  <!-- ... (rest of the HTML code) ... -->
+</body>
+</html>
