@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const mongoose= require("mongoose");
 const { Hash } = require('crypto');
 app.use(bodyParser.urlencoded({extended:true}));
-//app.use(express.static("frontend"))
 const path = require('path');
 const cors = require('cors');
 const ejs = require('ejs');
@@ -30,6 +29,7 @@ const database = module.exports= () =>{
         console.log("Database connection failed")
     }
 }
+
 database();
 //Var to store movie's name from user preferance to their watchlist
 // var moviesTitlesFromUser=[]
@@ -41,7 +41,7 @@ const emailSchema= new mongoose.Schema({
 const Email = mongoose.model('Email', emailSchema);
 
 app.get("/",function(req,res){
-    res.sendFile(__dirname+ "/index.html")
+   res.sendFile(__dirname+ "/index.html")
 })
 
 
